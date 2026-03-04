@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: "/lo-fi-wireframes-for-pizzanow/",
   resolve: {
     alias: {
       // Alias @ to the src directory
