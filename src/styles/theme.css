@@ -210,7 +210,6 @@
 
 @layer components {
   .mobile-shell {
-    width: min(390px, 100vw);
     min-height: 100vh;
     margin: 0 auto;
     background: var(--background);
@@ -324,7 +323,7 @@
   .bottom-nav {
     position: fixed;
     bottom: 0;
-    width: min(390px, 100vw);
+    width: 100%;
     background: var(--card);
     border-top: 1px solid var(--border);
     padding: 10px var(--space-2) max(10px, env(safe-area-inset-bottom));
