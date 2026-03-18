@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { Home, Menu, ShoppingCart, Heart, User, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Home, Menu, ShoppingCart, Heart, User, Plus, Minus } from 'lucide-react';
 
 export default function CartScreen() {
   const cartItems = [
@@ -12,7 +12,17 @@ export default function CartScreen() {
     <div className="min-h-screen bg-neutral-100 flex flex-col" style={{ width: '390px', height: '844px', margin: '0 auto' }}>
       {/* Header */}
       <div className="bg-white border-b border-neutral-300 px-6 py-4">
-        <div className="w-24 h-6 bg-neutral-800 rounded"></div>
+        <div className="flex items-center justify-between">
+          <Link
+            to="/"
+            className="w-10 h-10 rounded-lg border border-neutral-300 flex items-center justify-center"
+            aria-label="Back to home"
+          >
+            <ArrowLeft className="w-5 h-5 text-neutral-800" />
+          </Link>
+          <div className="w-24 h-6 bg-neutral-800 rounded"></div>
+          <div className="w-10 h-10"></div>
+        </div>
       </div>
 
       {/* Content */}
