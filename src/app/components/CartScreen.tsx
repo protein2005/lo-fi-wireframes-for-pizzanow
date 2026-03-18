@@ -1,131 +1,197 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { ArrowLeft, Home, Menu, ShoppingCart, Heart, User, Plus, Minus } from 'lucide-react';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+
+const cartItems = [
+  {
+    id: 1,
+    name: 'Пепероні Раш',
+    note: '30 см, тонке тісто',
+    price: 249,
+    quantity: 1,
+    image: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg?auto=compress&cs=tinysrgb&w=700',
+  },
+  {
+    id: 2,
+    name: 'Сирний Вулкан',
+    note: '32 см, сирний бортик',
+    price: 289,
+    quantity: 1,
+    image: 'https://images.pexels.com/photos/2147491/pexels-photo-2147491.jpeg?auto=compress&cs=tinysrgb&w=700',
+  },
+  {
+    id: 3,
+    name: 'Кола 0.5',
+    note: 'Охолоджений напій',
+    price: 49,
+    quantity: 2,
+    image: 'https://images.pexels.com/photos/2338407/pexels-photo-2338407.jpeg?auto=compress&cs=tinysrgb&w=700',
+  },
+];
+const delivery = 39;
+const tax = 28;
 
 export default function CartScreen() {
-  const cartItems = [
-    { id: 1 },
-    { id: 2 },
-    { id: 3 },
-  ];
+  const [items, setItems] = useState(cartItems);
+  const [isProceeding, setIsProceeding] = useState(false);
+
+  const changeQuantity = (itemId: number, delta: number) => {
+    setItems((current) =>
+      current.map((item) => {
+        if (item.id !== itemId) {
+          return item;
+        }
+
+        return {
+          ...item,
+          quantity: Math.max(1, item.quantity + delta),
+        };
+      }),
+    );
+  };
+
+  const subtotal = useMemo(
+    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [items],
+  );
+  const total = subtotal + delivery + tax;
+
+  const handleProceed = () => {
+    setIsProceeding(true);
+    window.setTimeout(() => {
+      setIsProceeding(false);
+    }, 900);
+  };
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex flex-col" style={{ width: '390px', height: '844px', margin: '0 auto' }}>
-      {/* Header */}
-      <div className="bg-white border-b border-neutral-300 px-6 py-4">
+    <div className="mobile-shell">
+      <header className="top-bar">
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="w-10 h-10 rounded-lg border border-neutral-300 flex items-center justify-center"
+            className="h-10 w-10 rounded-xl border border-[var(--border)] bg-[var(--card)] flex items-center justify-center"
             aria-label="Back to home"
           >
-            <ArrowLeft className="w-5 h-5 text-neutral-800" />
+            <ArrowLeft className="h-5 w-5 text-[var(--foreground)]" />
           </Link>
-          <div className="w-24 h-6 bg-neutral-800 rounded"></div>
-          <div className="w-10 h-10"></div>
+          <h1 className="text-[var(--text-h2-size)]">Кошик</h1>
+          <div className="h-10 w-10" aria-hidden="true" />
         </div>
-      </div>
+      </header>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 pt-6 pb-24">
-        {/* Cart Items */}
-        <div className="mb-6 space-y-4">
-          {cartItems.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg p-4">
-              <div className="flex gap-4 mb-3">
-                {/* Image Placeholder */}
-                <div className="w-20 h-20 bg-neutral-300 rounded flex-shrink-0"></div>
-                
-                {/* Content */}
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    {/* Pizza Name */}
-                    <div className="w-full h-3 bg-neutral-800 rounded mb-2"></div>
-                    {/* Description */}
-                    <div className="w-3/4 h-2 bg-neutral-400 rounded"></div>
+      <main className="screen-content">
+        <section className="screen-section">
+          <h2 className="section-title">Ваше замовлення</h2>
+          <div className="space-y-3">
+            {items.map((item) => (
+              <article key={item.id} className="surface-card p-3">
+                <div className="flex gap-3 mb-3">
+                  <ImageWithFallback
+                    src={item.image}
+                    alt={item.name}
+                    className="h-20 w-20 rounded-xl object-cover border border-[#ffe0b2] flex-shrink-0"
+                    loading="lazy"
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-[15px] font-semibold leading-tight text-[var(--foreground)] mb-1">{item.name}</h3>
+                    <p className="text-[13px] text-[var(--muted-foreground)] mb-2">{item.note}</p>
+                    <p className="text-sm font-semibold text-[var(--foreground)]">{item.price} грн</p>
                   </div>
-                  
-                  {/* Price */}
-                  <div className="w-16 h-3 bg-neutral-800 rounded"></div>
                 </div>
-              </div>
 
-              {/* Quantity Controls */}
-              <div className="flex items-center justify-between pt-3 border-t border-neutral-200">
-                <div className="flex items-center gap-4">
-                  <button className="w-8 h-8 bg-neutral-200 rounded flex items-center justify-center">
-                    <Minus className="w-4 h-4 text-neutral-600" />
-                  </button>
-                  <div className="w-6 h-3 bg-neutral-800 rounded"></div>
-                  <button className="w-8 h-8 bg-neutral-800 rounded flex items-center justify-center">
-                    <Plus className="w-4 h-4 text-white" />
-                  </button>
+                <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => changeQuantity(item.id, -1)}
+                      className="h-9 w-9 rounded-lg border border-[var(--border)] bg-[var(--background)] flex items-center justify-center pressable"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="h-4 w-4 text-[var(--muted-foreground)]" />
+                    </button>
+                    <span className="text-sm font-semibold text-[var(--foreground)] min-w-6 text-center">{item.quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => changeQuantity(item.id, 1)}
+                      className="h-9 w-9 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center pressable"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <span className="text-sm font-semibold text-[var(--foreground)]">{item.price * item.quantity} грн</span>
                 </div>
-                <div className="w-16 h-3 bg-neutral-800 rounded"></div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="screen-section">
+          <div className="surface-card p-4">
+            <h2 className="section-title !mb-3">Підсумок замовлення</h2>
+
+            <div className="space-y-2 mb-3">
+              <div className="flex items-center justify-between text-[13px] text-[var(--muted-foreground)]">
+                <span>Сума</span>
+                <span>{subtotal} грн</span>
+              </div>
+              <div className="flex items-center justify-between text-[13px] text-[var(--muted-foreground)]">
+                <span>Доставка</span>
+                <span>{delivery} грн</span>
+              </div>
+              <div className="flex items-center justify-between text-[13px] text-[var(--muted-foreground)]">
+                <span>Податок</span>
+                <span>{tax} грн</span>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Order Summary Block */}
-        <div className="bg-white rounded-lg p-6 mb-6">
-          <div className="w-32 h-4 bg-neutral-800 rounded mb-4"></div>
-          
-          <div className="space-y-3 mb-4">
-            {/* Subtotal */}
-            <div className="flex items-center justify-between">
-              <div className="w-16 h-2 bg-neutral-400 rounded"></div>
-              <div className="w-16 h-2 bg-neutral-400 rounded"></div>
-            </div>
-            
-            {/* Delivery */}
-            <div className="flex items-center justify-between">
-              <div className="w-16 h-2 bg-neutral-400 rounded"></div>
-              <div className="w-16 h-2 bg-neutral-400 rounded"></div>
-            </div>
-            
-            {/* Tax */}
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-2 bg-neutral-400 rounded"></div>
-              <div className="w-16 h-2 bg-neutral-400 rounded"></div>
+            <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between">
+              <span className="text-sm font-semibold text-[var(--foreground)]">Разом</span>
+              <span className="text-[16px] font-semibold text-[var(--foreground)]">{total} грн</span>
             </div>
           </div>
+        </section>
 
-          {/* Total */}
-          <div className="pt-3 border-t border-neutral-300 flex items-center justify-between">
-            <div className="w-20 h-4 bg-neutral-800 rounded"></div>
-            <div className="w-20 h-4 bg-neutral-800 rounded"></div>
-          </div>
-        </div>
-
-        {/* Proceed to Payment Button */}
-        <button className="w-full bg-neutral-800 rounded-lg py-4 flex items-center justify-center">
-          <div className="w-48 h-4 bg-white rounded"></div>
+        <button
+          type="button"
+          className="cta-primary w-full pressable"
+          aria-label="Перейти до оплати"
+          onClick={handleProceed}
+        >
+          {isProceeding ? 'Переходимо...' : 'Перейти до оплати'}
         </button>
-      </div>
+      </main>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 bg-white border-t border-neutral-300 px-6 py-3 flex items-center justify-between" style={{ width: '390px' }}>
-        <Link to="/" className="flex flex-col items-center gap-1">
-          <Home className="w-6 h-6 text-neutral-400" />
-          <div className="w-8 h-1 bg-neutral-400 rounded"></div>
+      <nav className="bottom-nav" aria-label="Bottom navigation">
+        <Link to="/" className="nav-item">
+          <Home className="h-5 w-5" />
+          <span className="text-[11px] font-medium">Головна</span>
+          <span className="nav-indicator" />
         </Link>
-        <Link to="/menu" className="flex flex-col items-center gap-1">
-          <Menu className="w-6 h-6 text-neutral-400" />
-          <div className="w-8 h-1 bg-neutral-400 rounded"></div>
+        <Link to="/menu" className="nav-item">
+          <Menu className="h-5 w-5" />
+          <span className="text-[11px] font-medium">Меню</span>
+          <span className="nav-indicator" />
         </Link>
-        <Link to="/cart" className="flex flex-col items-center gap-1">
-          <ShoppingCart className="w-6 h-6 text-neutral-800" />
-          <div className="w-8 h-1 bg-neutral-800 rounded"></div>
+        <Link to="/cart" className="nav-item nav-item-active" aria-current="page">
+          <ShoppingCart className="h-5 w-5" />
+          <span className="text-[11px] font-medium">Кошик</span>
+          <span className="nav-indicator" />
         </Link>
-        <div className="flex flex-col items-center gap-1">
-          <Heart className="w-6 h-6 text-neutral-400" />
-          <div className="w-8 h-1 bg-neutral-400 rounded"></div>
+        <div className="nav-item" aria-hidden="true">
+          <Heart className="h-5 w-5" />
+          <span className="text-[11px] font-medium">Збережене</span>
+          <span className="nav-indicator" />
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <User className="w-6 h-6 text-neutral-400" />
-          <div className="w-8 h-1 bg-neutral-400 rounded"></div>
+        <div className="nav-item" aria-hidden="true">
+          <User className="h-5 w-5" />
+          <span className="text-[11px] font-medium">Профіль</span>
+          <span className="nav-indicator" />
         </div>
-      </div>
+      </nav>
     </div>
   );
 }
