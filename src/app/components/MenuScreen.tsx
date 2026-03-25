@@ -2,16 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import {
   ArrowLeft,
-  Home,
-  Menu,
-  ShoppingCart,
-  Heart,
-  User,
   Search,
   SlidersHorizontal,
   X,
 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import AddToCartButton from './AddToCartButton';
+import BottomNav from './BottomNav';
+import { useCart } from '../context/CartContext';
 
 type PizzaItem = {
   id: number;
@@ -70,15 +68,7 @@ const pizzaItems: PizzaItem[] = [
 
 export default function MenuScreen() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [addedItems, setAddedItems] = useState<number[]>([]);
-
-  const toggleCartState = (itemId: number) => {
-    setAddedItems((current) =>
-      current.includes(itemId)
-        ? current.filter((id) => id !== itemId)
-        : [...current, itemId],
-    );
-  };
+  const { isInCart, toggleItem } = useCart();
 
   return (
     <div className="mobile-shell">
@@ -120,8 +110,7 @@ export default function MenuScreen() {
           <h2 className="section-title">Популярні піци</h2>
           <div className="space-y-3">
             {pizzaItems.map((item) => {
-              const isAdded = addedItems.includes(item.id);
-              const addButtonClass = 'add-btn pressable' + (isAdded ? ' added' : '');
+              const isAdded = isInCart(item.id);
 
               return (
                 <article key={item.id} className="surface-card p-3">
@@ -138,24 +127,29 @@ export default function MenuScreen() {
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <h3 className="text-[15px] font-semibold leading-tight text-[var(--foreground)]">{item.name}</h3>
                           {item.spicy ? (
-                            <span className="h-6 px-2 rounded-full bg-[#ffebee] text-[#c62828] text-[11px] font-semibold inline-flex items-center">
-                              гостра
+                            <span className="status-chip status-chip-danger">
+                              ! Гостра
                             </span>
                           ) : null}
                         </div>
-                        <p className="text-[13px] leading-[1.4] text-[var(--muted-foreground)]">{item.description}</p>
+                        <p className="text-[13px] leading-[1.5] text-[var(--muted-foreground)] text-measure">{item.description}</p>
                       </div>
 
                       <div className="mt-3 flex items-center justify-between gap-2">
                         <span className="text-sm font-semibold text-[var(--foreground)] whitespace-nowrap shrink-0">{item.price} грн</span>
-                        <button
-                          type="button"
-                          onClick={() => toggleCartState(item.id)}
-                          className={addButtonClass}
-                          aria-pressed={isAdded}
-                        >
-                          {isAdded ? 'Додано' : 'У кошик'}
-                        </button>
+                        <AddToCartButton
+                          isAdded={isAdded}
+                          itemName={item.name}
+                          onClick={() =>
+                            toggleItem({
+                              id: item.id,
+                              name: item.name,
+                              note: `${item.spicy ? 'Гостра, ' : ''}30 см`,
+                              price: item.price,
+                              image: item.image,
+                            })
+                          }
+                        />
                       </div>
                     </div>
                   </div>
@@ -166,33 +160,7 @@ export default function MenuScreen() {
         </section>
       </main>
 
-      <nav className="bottom-nav" aria-label="Bottom navigation">
-        <Link to="/" className="nav-item">
-          <Home className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Головна</span>
-          <span className="nav-indicator" />
-        </Link>
-        <Link to="/menu" className="nav-item nav-item-active" aria-current="page">
-          <Menu className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Меню</span>
-          <span className="nav-indicator" />
-        </Link>
-        <Link to="/cart" className="nav-item">
-          <ShoppingCart className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Кошик</span>
-          <span className="nav-indicator" />
-        </Link>
-        <div className="nav-item" aria-hidden="true">
-          <Heart className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Збережене</span>
-          <span className="nav-indicator" />
-        </div>
-        <div className="nav-item" aria-hidden="true">
-          <User className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Профіль</span>
-          <span className="nav-indicator" />
-        </div>
-      </nav>
+      <BottomNav active="menu" />
 
       {isSearchOpen ? (
         <div className="absolute inset-0 z-40 bg-black/40 px-4 pt-24">

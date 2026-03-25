@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
-import { Home, Menu, ShoppingCart, Heart, User, Flame, Clock3 } from 'lucide-react';
+import { Flame, Clock3 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import AddToCartButton from './AddToCartButton';
+import BottomNav from './BottomNav';
+import { useCart } from '../context/CartContext';
 
 const popularPizzas = [
   {
@@ -43,15 +44,7 @@ const offers = [
 ];
 
 export default function HomeScreen() {
-  const [addedItems, setAddedItems] = useState<number[]>([]);
-
-  const toggleAdd = (pizzaId: number) => {
-    setAddedItems((current) =>
-      current.includes(pizzaId)
-        ? current.filter((id) => id !== pizzaId)
-        : [...current, pizzaId],
-    );
-  };
+  const { isInCart, toggleItem } = useCart();
 
   return (
     <div className="mobile-shell">
@@ -77,7 +70,9 @@ export default function HomeScreen() {
               </div>
               <Clock3 className="h-5 w-5 text-white/90" />
             </div>
-            <p className="text-[13px] leading-[1.4] text-white/90 mb-4">Повторіть минуле замовлення в один тап. Доставка за 25-35 хв.</p>
+            <p className="text-[13px] leading-[1.5] text-white/90 mb-4 text-measure">
+              Повторіть минуле замовлення в один тап. Доставка за 25-35 хв.
+            </p>
             <button type="button" className="h-11 px-4 rounded-xl bg-white text-[#b72724] text-sm font-semibold pressable">
               Повторити замовлення - 329 грн
             </button>
@@ -88,11 +83,10 @@ export default function HomeScreen() {
           <h2 className="section-title">Популярні піци</h2>
           <div className="flex gap-3 overflow-x-auto pb-1">
             {popularPizzas.map((pizza) => {
-              const isAdded = addedItems.includes(pizza.id);
-              const addButtonClass = 'add-btn pressable' + (isAdded ? ' added' : '');
+              const isAdded = isInCart(pizza.id);
 
               return (
-              <article key={pizza.id} className="surface-card p-3 min-w-[188px]">
+              <article key={pizza.id} className="surface-card p-3 min-w-[216px]">
                 <ImageWithFallback
                   src={pizza.image}
                   alt={pizza.name}
@@ -101,17 +95,21 @@ export default function HomeScreen() {
                 />
                 <p className="text-[15px] font-semibold text-[var(--foreground)] leading-tight mb-1">{pizza.name}</p>
                 <p className="caption-text mb-3">{pizza.size}</p>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col items-start gap-2">
                   <span className="text-sm font-semibold text-[var(--foreground)] whitespace-nowrap shrink-0">{pizza.price}</span>
-                  <button
-                    type="button"
-                    className={addButtonClass}
-                    aria-label={'Додати ' + pizza.name + ' у кошик'}
-                    aria-pressed={isAdded}
-                    onClick={() => toggleAdd(pizza.id)}
-                  >
-                    {isAdded ? 'Додано' : 'У кошик'}
-                  </button>
+                  <AddToCartButton
+                    isAdded={isAdded}
+                    itemName={pizza.name}
+                    onClick={() =>
+                      toggleItem({
+                        id: pizza.id,
+                        name: pizza.name,
+                        note: `${pizza.size}, класичний рецепт`,
+                        price: Number.parseInt(pizza.price, 10),
+                        image: pizza.image,
+                      })
+                    }
+                  />
                 </div>
               </article>
               );
@@ -126,12 +124,12 @@ export default function HomeScreen() {
               <article key={offer.id} className="surface-card p-4">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <h3 className="text-[16px] font-semibold text-[var(--foreground)] leading-tight">{offer.title}</h3>
-                  <span className="h-7 px-3 rounded-full bg-[var(--accent)] text-[var(--foreground)] text-xs font-semibold inline-flex items-center">
+                  <span className="status-chip status-chip-warning">
                     {offer.tag}
                   </span>
                 </div>
-                <p className="text-[13px] text-[var(--muted-foreground)] leading-[1.4] mb-3">{offer.subtitle}</p>
-                <div className="inline-flex items-center gap-2 text-[13px] font-medium text-[#c0392b]">
+                <p className="text-[13px] leading-[1.5] text-[var(--muted-foreground)] text-measure mb-3">{offer.subtitle}</p>
+                <div className="status-inline">
                   <Flame className="h-4 w-4" />
                   Акція діє сьогодні
                 </div>
@@ -141,33 +139,7 @@ export default function HomeScreen() {
         </section>
       </main>
 
-      <nav className="bottom-nav" aria-label="Bottom navigation">
-        <Link to="/" className="nav-item nav-item-active" aria-current="page">
-          <Home className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Головна</span>
-          <span className="nav-indicator" />
-        </Link>
-        <Link to="/menu" className="nav-item">
-          <Menu className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Меню</span>
-          <span className="nav-indicator" />
-        </Link>
-        <Link to="/cart" className="nav-item">
-          <ShoppingCart className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Кошик</span>
-          <span className="nav-indicator" />
-        </Link>
-        <div className="nav-item" aria-hidden="true">
-          <Heart className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Збережене</span>
-          <span className="nav-indicator" />
-        </div>
-        <div className="nav-item" aria-hidden="true">
-          <User className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Профіль</span>
-          <span className="nav-indicator" />
-        </div>
-      </nav>
+      <BottomNav active="home" />
     </div>
   );
 }
